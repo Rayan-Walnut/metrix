@@ -1,50 +1,33 @@
-/**
- * Classe Clause
- * Gère toutes les opérations sur la clause
- * via des requêtes AJAX fetch
- */
+export default class Clause {
+  sendInsert(endpoint, data, btn) {
+    const formData = new FormData();
+    for (const [k, v] of Object.entries(data)) formData.append(k, v);
 
-class Clause {
-    // Méthode de insertation d'une nouvelle clause
-    // prend en paramétre le bouton d'insertion et les données de la clause
-    sendInsert(endpoint, data, btn) {
-        const formData = new FormData();
-        for (const [key, value] of Object.entries(data)) {
-            formData.append(key, value);
-        }
+    btn.disabled = true;
+    const old = btn.textContent;
+    btn.textContent = '...';
 
-        btn.disabled = true;
-        btn.textContent = '...';
-
-        fetch(endpoint, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                // Affiche un indicateur de succès
-                btn.textContent = '✓';
-                btn.style.color = '#16a34a';
-                setTimeout(() => {
-                    btn.style.color = '';
-                    btn.disabled = false;
-                }, 2000);
-            } else {
-                // Affiche le message d'erreur du serveur
-                alert('Erreur: ' + result.message);
-                btn.textContent = '✓';
-                btn.disabled = false;
-            }
-        })
-        .catch(err => {
-            // Affiche les erreurs réseau
-            alert('Erreur réseau: ' + err);
-            btn.textContent = '✓';
+    fetch(endpoint, { method: 'POST', body: formData })
+      .then(r => r.json())
+      .then(result => {
+        if (result.success) {
+          btn.textContent = '✓';
+          btn.style.color = '#16a34a';
+          setTimeout(() => {
+            btn.style.color = '';
             btn.disabled = false;
-        });
-    }
+            btn.textContent = old;
+          }, 900);
+        } else {
+          alert('Erreur: ' + result.message);
+          btn.disabled = false;
+          btn.textContent = old;
+        }
+      })
+      .catch(err => {
+        alert('Erreur réseau: ' + err);
+        btn.disabled = false;
+        btn.textContent = old;
+      });
+  }
 }
-
-// Export ESM
-export default Clause;

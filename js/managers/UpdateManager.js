@@ -1,94 +1,68 @@
-/**
- * Classe UpdateManager
- * Gère toutes les opérations de mise à jour (métriques et observations)
- * via des requêtes AJAX fetch
- */
-class UpdateManager {
-    /**
-     * Met à jour la valeur d'une métrique
-     */
-    updateMetricValue(btn, metriqueId) {
-        const input = btn.parentElement.querySelector('.metric-value-input');
-        const newValue = input.value;
-        
-        // Validation
-        if (newValue === '' || isNaN(newValue)) {
-            alert('Veuillez entrer une valeur valide');
-            return;
-        }
-        
-        const data = {
-            metrique_id: metriqueId,
-            value: newValue
-        };
-        
-        this.sendUpdate('api/update_metric.php', data, btn);
+export default class UpdateManager {
+  updateMetricValue(btn, metriqueId) {
+    const input = btn.parentElement.querySelector('.metric-value-input');
+    const newValue = input?.value;
+
+    if (newValue === '' || newValue === null || Number.isNaN(Number(newValue))) {
+      alert('Veuillez entrer une valeur valide');
+      return;
     }
 
-    /**
-     * Met à jour une observation
-     */
-    updateObservation(btn, observationId) {
-        const container = btn.closest('.observation-editor');
-        const textarea = container.querySelector('.observation-input');
-        const notePicker = container.querySelector('.note-color-picker');
-        const activeNote = notePicker ? notePicker.querySelector('.note-color-btn.active') : null;
-        const newObservation = textarea.value;
-        
-        // Validation
-        if (newObservation.trim() === '') {
-            alert('Veuillez entrer une observation');
-            return;
-        }
-        
-        const data = {
-            observation_id: observationId,
-            observation: newObservation,
-            note: activeNote ? activeNote.dataset.value : null
-        };
-        
-        this.sendUpdate('api/update_observation.php', data, btn);
+    this.sendUpdate('api/update_metric.php', { metrique_id: metriqueId, value: newValue }, btn);
+  }
+
+  updateObservation(btn, observationId) {
+    const container = btn.closest('.observation-editor');
+    const textarea = container?.querySelector('.observation-input');
+    const notePicker = container?.querySelector('.note-color-picker');
+    const activeNote = notePicker?.querySelector('.note-color-btn.active');
+    const newObservation = textarea?.value ?? '';
+
+    if (newObservation.trim() === '') {
+      alert('Veuillez entrer une observation');
+      return;
     }
 
-    /**
-     * Envoie une requête de mise à jour au serveur
-     * Méthode générique utilisée par updateMetricValue et updateObservation
-     */
-    sendUpdate(endpoint, data, btn) {
-        const formData = new FormData();
-        for (const [key, value] of Object.entries(data)) {
-            formData.append(key, value);
-        }
+    this.sendUpdate(
+      'api/update_observation.php',
+      {
+        observation_id: observationId,
+        observation: newObservation,
+        note: activeNote ? activeNote.dataset.value : null
+      },
+      btn
+    );
+  }
 
-        btn.disabled = true;
-        btn.textContent = '...';
+  sendUpdate(endpoint, data, btn) {
+    const formData = new FormData();
+    for (const [k, v] of Object.entries(data)) formData.append(k, v);
 
-        fetch(endpoint, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                // Affiche un indicateur de succès
-                btn.textContent = '✓';
-                btn.style.color = '#16a34a';
-                setTimeout(() => {
-                    btn.style.color = '';
-                    btn.disabled = false;
-                }, 2000);
-            } else {
-                // Affiche le message d'erreur du serveur
-                alert('Erreur: ' + result.message);
-                btn.textContent = '✓';
-                btn.disabled = false;
-            }
-        })
-        .catch(err => {
-            // Affiche les erreurs réseau
-            alert('Erreur réseau: ' + err);
-            btn.textContent = '✓';
+    btn.disabled = true;
+    const old = btn.textContent;
+    btn.textContent = '...';
+
+    fetch(endpoint, { method: 'POST', body: formData })
+      .then(r => r.json())
+      .then(result => {
+        if (result.success) {
+          btn.textContent = '✓';
+          btn.style.color = '#16a34a';
+          setTimeout(() => {
+            btn.style.color = '';
             btn.disabled = false;
-        });
-    }
+            btn.textContent = old;
+          }, 900);
+        } else {
+          alert('Erreur: ' + result.message);
+          btn.disabled = false;
+          btn.textContent = old;
+        }
+      })
+      .catch(err => {
+        alert('Erreur réseau: ' + err);
+        btn.disabled = false;
+        btn.textContent = old;
+      });
+  }
 }

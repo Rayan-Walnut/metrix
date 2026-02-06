@@ -75,7 +75,7 @@ $progressPercent = $totalClauses > 0 ? round(($clausesWithNotes / $totalClauses)
     <title>Metrix - DISI</title>
     <link rel="stylesheet" href="styles/main.css" />
     <!-- Chart.js chargé en defer pour ne pas bloquer le rendu -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 </head>
 
 <body>
@@ -109,7 +109,7 @@ $progressPercent = $totalClauses > 0 ? round(($clausesWithNotes / $totalClauses)
         <div class="sidebar-content">
             <!-- Section Favoris dans le sommaire -->
             <div class="sidebar-domain sidebar-favorites" id="sidebar-favorites" style="display: none;">
-                <button class="sidebar-domain-btn sidebar-favorites-btn" onclick="toggleSidebarDomain(this)">
+                <button class="sidebar-domain-btn sidebar-favorites-btn" data-action="sidebar-domain-toggle">
                     <span class="sidebar-domain-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="var(--c-gold)" stroke="var(--c-gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
@@ -131,7 +131,7 @@ $progressPercent = $totalClauses > 0 ? round(($clausesWithNotes / $totalClauses)
                 $avgClass = $avg === null ? '' : ($avg < 1 ? 'avg-low' : ($avg < 2 ? 'avg-mid' : 'avg-high'));
                 ?>
                 <div class="sidebar-domain">
-                    <button class="sidebar-domain-btn" onclick="toggleSidebarDomain(this)" data-domain-id="<?= htmlspecialchars($domainId) ?>">
+                    <button class="sidebar-domain-btn" data-action="sidebar-domain-toggle" data-domain-id="<?= htmlspecialchars($domainId) ?>">
                         <span class="sidebar-domain-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="9 6 15 12 9 18"></polyline>
@@ -157,7 +157,7 @@ $progressPercent = $totalClauses > 0 ? round(($clausesWithNotes / $totalClauses)
                             }
                             ?>
                             <a href="#clause-<?= htmlspecialchars($clause['id']) ?>" class="sidebar-clause-link" data-clause-id="<?= htmlspecialchars($clause['id']) ?>">
-                                <button class="sidebar-favorite-btn" onclick="toggleFavorite(event, '<?= htmlspecialchars($clause['id']) ?>')" title="Ajouter aux favoris">
+                                <button class="sidebar-favorite-btn" data-action="favorite-toggle" data-clause-id="<?= htmlspecialchars($clause['id']) ?>" title="Ajouter aux favoris">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                                     </svg>
@@ -257,7 +257,7 @@ $progressPercent = $totalClauses > 0 ? round(($clausesWithNotes / $totalClauses)
             <div class="domain-section" data-domain-id="<?= htmlspecialchars($domainId) ?>">
                 <div class="domain-header">
                     <h3 class="domain-title"><?= htmlspecialchars($domainData['nom']) ?></h3>
-                    <button class="domain-toggle-btn" onclick="toggleDomainSection(this)">
+                    <button class="domain-toggle-btn" data-action="domain-toggle">
                         <?= $isOpen ? 'Masquer les clauses' : 'Voir les clauses' ?>
                         <span class="domain-toggle-icon">▾</span>
                     </button>
@@ -268,11 +268,17 @@ $progressPercent = $totalClauses > 0 ? round(($clausesWithNotes / $totalClauses)
                         <div class="clause-row" id="clause-<?= htmlspecialchars($row['id']) ?>" data-clause-id="<?= htmlspecialchars(strtolower($row['nom'])) ?>" data-clause-num="<?= htmlspecialchars($row['id']) ?>">
                             <div class="clause-header">
                                 <div class="clause-code"><?= htmlspecialchars($row['nom']) ?></div>
-                                <button class="clause-favorite-btn" onclick="toggleFavorite(event, '<?= htmlspecialchars($row['id']) ?>')" title="Ajouter aux favoris" data-clause-id="<?= htmlspecialchars($row['id']) ?>">
+                                <button
+                                    class="clause-favorite-btn"
+                                    data-action="favorite-toggle"
+                                    data-clause-id="<?= htmlspecialchars($row['id']) ?>"
+                                    title="Ajouter aux favoris"
+                                >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                                     </svg>
                                 </button>
+                                
                             </div>
 
                             <!-- ici ont affiche -->
@@ -306,12 +312,12 @@ $progressPercent = $totalClauses > 0 ? round(($clausesWithNotes / $totalClauses)
                                                             </svg>
                                                             <span class="preuve-filename"><?= htmlspecialchars($preuve['filename']) ?></span>
                                                         </a>
-                                                        <button type="button" class="preuve-rename-btn" onclick="renamePreuve(this, <?= htmlspecialchars($preuve['id']) ?>)" title="Renommer">
+                                                        <button type="button" class="preuve-rename-btn" data-action="preuve-rename" data-id="<?= htmlspecialchars($preuve['id']) ?>" title="Renommer">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                                 <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                                                             </svg>
                                                         </button>
-                                                        <button type="button" class="preuve-delete-btn" onclick="deletePreuve(this, <?= htmlspecialchars($preuve['id']) ?>)" title="Supprimer">
+                                                        <button type="button" class="preuve-delete-btn" data-action="preuve-delete" data-id="<?= htmlspecialchars($preuve['id']) ?>" title="Supprimer">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                                 <line x1="18" y1="6" x2="6" y2="18"></line>
                                                                 <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -325,7 +331,7 @@ $progressPercent = $totalClauses > 0 ? round(($clausesWithNotes / $totalClauses)
                                         <!-- Formulaire d'ajout de preuve (toujours visible) -->
                                         <div class="preuve-upload">
                                             <input type="file" class="preuve-input" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" multiple />
-                                            <button type="button" class="preuve-upload-btn" onclick="uploadPreuve(this, <?= htmlspecialchars($row['id']) ?>)">
+                                            <button type="button" class="preuve-upload-btn" data-action="preuve-upload" data-id="<?= htmlspecialchars($row['id']) ?>">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                                     <polyline points="17 8 12 3 7 8"></polyline>
@@ -334,7 +340,7 @@ $progressPercent = $totalClauses > 0 ? round(($clausesWithNotes / $totalClauses)
                                             </button>
                                             <span class="preuve-add-label">Ajouter des preuves</span>
                                             <?php if (isset($preuvesByClause[$row['id']]) && count($preuvesByClause[$row['id']]) > 0): ?>
-                                                <button type="button" class="preuve-clear-all-btn" onclick="deleteAllPreuves(this, <?= htmlspecialchars($row['id']) ?>)" title="Vider toutes les preuves">
+                                                <button type="button" class="preuve-clear-all-btn" data-action="preuve-clear" data-id="<?= htmlspecialchars($row['id']) ?>" title="Vider toutes les preuves">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                         <polyline points="3 6 5 6 21 6"></polyline>
                                                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -371,7 +377,7 @@ $progressPercent = $totalClauses > 0 ? round(($clausesWithNotes / $totalClauses)
                                                             <span class="metric-date"><?= htmlspecialchars($lastValue['date']) ?></span>
                                                             <div class="metric-input-group">
                                                                 <input type="number" class="metric-value-input" value="<?= htmlspecialchars($lastValue['value']) ?>" data-metric-id="<?= htmlspecialchars($metric['metrique_id']) ?>" />
-                                                                <button class="metric-save-btn" onclick="updateMetricValue(this, <?= htmlspecialchars($metric['metrique_id']) ?>)">✓</button>
+                                                                <button class="metric-save-btn" data-action="metric-update" data-id="<?= htmlspecialchars($metric['metrique_id']) ?>">✓</button>
                                                             </div>
                                                             <div class="metric-chart-container">
                                                                 <canvas
@@ -416,7 +422,7 @@ $progressPercent = $totalClauses > 0 ? round(($clausesWithNotes / $totalClauses)
                                             </div>
                                             <div class="observation-input-group">
                                                 <textarea class="observation-input" data-observation-id="<?= htmlspecialchars($lastObservation['id']) ?>"><?= htmlspecialchars($lastObservation['observation']) ?></textarea>
-                                                <button class="observation-save-btn" onclick="updateObservation(this, <?= htmlspecialchars($lastObservation['id']) ?>)">✓</button>
+                                                <button class="observation-save-btn" data-action="obs-update" data-id="<?= htmlspecialchars($lastObservation['id']) ?>">✓</button>
                                             </div>
                                         </div>
 
@@ -474,9 +480,6 @@ $progressPercent = $totalClauses > 0 ? round(($clausesWithNotes / $totalClauses)
                 </div>
             </div>
         <?php endforeach; ?>
-
-        <!-- Copyright Button -->
-        <span class="copyright-text">© Rayan-Walnut | 0652657867</span>
     </div>
 
     <!-- Bouton retour en haut -->
@@ -486,19 +489,7 @@ $progressPercent = $totalClauses > 0 ? round(($clausesWithNotes / $totalClauses)
         </svg>
     </button>
 
-    <!-- Scripts chargés en fin de page pour ne pas bloquer le rendu -->
-    <?php $v = '?v=' . time(); // Cache-buster 
-    ?>
-    <script src="js/charts/ObservationTimeline.js" defer></script>
-    <script src="js/charts/MetricChart.js" defer></script>
-    <script src="js/managers/UpdateManager.js" defer></script>
-    <script src="js/utils/globals.js" defer></script>
-    <script src="js/utils/search.js" defer></script>
-    <script src="js/utils/tooltips.js" defer></script>
-    <script src="js/MetrixApp.js" defer></script>
-    <script src="js/clauses/Clause.js" defer></script>
-
-    <script src="js/main.js" defer></script>
+    <script src="js/main.js" type="module"></script>
 </body>
 
 </html>
