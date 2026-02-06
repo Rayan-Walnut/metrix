@@ -54,6 +54,22 @@ export default class MetrixApp {
           console.log('Submitting clause', endpoint, data);
           return this.clause.sendInsert(endpoint, data, btn);
         }
+        return;
+      }
+
+      case 'domaine-add': {
+        const formSelector = btn.dataset.form;
+        const endpoint = btn.dataset.endpoint || '../api/add_domaine.php';
+        if (formSelector) {
+          const form = document.querySelector(formSelector);
+          if (!form) return alert('Formulaire introuvable');
+          const fd = new FormData(form);
+          const data = {};
+          fd.forEach((v, k) => { data[k] = v; });
+          console.log('Submitting domaine', endpoint, data);
+          return this.clause.sendInsert(endpoint, data, btn);
+        }
+        return;
       }
 
       case 'domain-toggle': return this.domainManager.toggleDomainSection(btn);

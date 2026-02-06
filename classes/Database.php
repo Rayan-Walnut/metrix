@@ -55,6 +55,24 @@ class Database {
         return $req->fetchAll();
     }
 
+    /**
+     * Ajoute un domaine. Si $id est fourni, l'utilise (table sans auto-increment), sinon insert normal.
+     */
+    public function addDomaine($nom, $id = null) {
+        $this->reconnectIfNeeded();
+        if ($id === null) {
+            $sql = "INSERT INTO domaines (nom) VALUES (:nom)";
+            $stmt = $this->db->prepare($sql);
+            $res = $stmt->execute([':nom' => $nom]);
+        } else {
+            $sql = "INSERT INTO domaines (id, nom) VALUES (:id, :nom)";
+            $stmt = $this->db->prepare($sql);
+            $res = $stmt->execute([':id' => $id, ':nom' => $nom]);
+        }
+        if ($res) return $this->db->lastInsertId() ?: $id;
+        return false;
+    }
+
     public function getClauseById($id) {
         $sql = "
             SELECT 
