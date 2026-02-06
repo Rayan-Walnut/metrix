@@ -317,22 +317,29 @@ class Database {
         return $result;
     }
 
-    public function addClause($nom, $objective, $input, $domaineId) {
+    public function addClause($nom, $objective, $input, $domaineId, $id) {
         $this->reconnectIfNeeded();
-        $sql = "INSERT INTO clauses (nom, objective, input, id) VALUES (:nom, :objective, :input, :id)";
+
+        $sql = "
+            INSERT INTO `clauses` (`nom`, `objective`, `input`, `domaineid`, `id`)
+            VALUES (:nom, :objective, :input, :domaineid, :id)
+        ";
+
         $stmt = $this->db->prepare($sql);
         $result = $stmt->execute([
             ':nom' => $nom,
             ':objective' => $objective,
             ':input' => $input,
-            ':id' => $domaineId
+            ':domaineid' => $domaineId,
+            ':id' => $id
         ]);
 
         if ($result) {
-            return $this->db->lastInsertId();
+            return (int)$this->db->lastInsertId();
         }
         return false;
     }
+
 
     public function updateObservation($observationId, $newObservation, $note = null) {
         if ($note !== null) {

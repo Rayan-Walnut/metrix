@@ -42,14 +42,23 @@ export default class MetrixApp {
     switch (action) {
       case 'metric-update': return this.updateManager.updateMetricValue(btn, id);
       case 'obs-update': return this.updateManager.updateObservation(btn, id);
-      case 'clause-add': return this.clause.sendInsert('api/add_clause.php', { clause_id: id }, btn);
+      case 'clause-add': {
+        const formSelector = btn.dataset.form;
+        const endpoint = btn.dataset.endpoint || '../api/add_clause.php';
+        if (formSelector) {
+          const form = document.querySelector(formSelector);
+          if (!form) return alert('Formulaire introuvable');
+          const fd = new FormData(form);
+          const data = {};
+          fd.forEach((v, k) => { data[k] = v; });
+          console.log('Submitting clause', endpoint, data);
+          return this.clause.sendInsert(endpoint, data, btn);
+        }
+      }
 
       case 'domain-toggle': return this.domainManager.toggleDomainSection(btn);
       case 'sidebar-domain-toggle': return window.toggleSidebarDomain?.(btn);
-      case 'favorite-toggle':
-        e.preventDefault();
-        e.stopPropagation();
-        return window.toggleFavorite?.(e, btn.dataset.clauseId);
+      case 'favorite-toggle': return window.toggleFavorite?.(e, btn.dataset.clauseId);
       case 'preuve-upload': return this.preuveManager.uploadPreuve(btn, id);
       case 'preuve-delete': return this.preuveManager.deletePreuve(btn, id);
       case 'preuve-rename': return this.preuveManager.renamePreuve(btn, id);
